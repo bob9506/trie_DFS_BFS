@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>DFS & BFS Interactive Traversal</title>
+<style>
+:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#203344;background:#fff}*{box-sizing:border-box}body{margin:0;padding:20px}main{max-width:700px;margin:auto;border:1px solid #e3e7ec;border-radius:16px;padding:22px;background:#fff}header,.controls,.legend,.steps-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}h1{font-size:20px;margin:0}p{margin:4px 0;color:#657487;font-size:13px}.seg{display:flex;background:#f2f5f8;padding:4px;border-radius:10px}button{font:inherit;font-size:14px;font-weight:600;cursor:pointer;border-radius:9px;padding:10px 15px;border:1px solid #d5dce4;background:white;color:#203344}button:focus-visible{outline:3px solid #8cb9ee;outline-offset:2px}button:disabled{opacity:.45;cursor:not-allowed}.seg button{border:0;background:transparent}.seg button[aria-pressed="true"]{background:#fff;box-shadow:0 1px 4px #0002}.graph{width:100%;max-height:320px;display:block;margin:12px auto}.edge{stroke:#99a8b8;stroke-width:2.5}.node circle{fill:#e5edf6;stroke:#6985a5;stroke-width:2;transition:fill .2s,stroke .2s}.node text{fill:#203344;font-weight:700;font-size:18px;dominant-baseline:middle;text-anchor:middle}.node.visited circle{fill:#d4eee0;stroke:#168456}.node.next circle{fill:#fde7b4;stroke:#cb8b1d}.legend{justify-content:center;font-size:13px;color:#607185;margin:2px 0 18px}.swatch{width:11px;height:11px;border-radius:50%;display:inline-block;margin-right:6px}.visited-swatch{background:#d4eee0;border:1px solid #168456}.next-swatch{background:#fde7b4;border:1px solid #cb8b1d}.panel{background:#f5f7f9;border-radius:12px;padding:15px}.steps-head{font-size:13px;font-weight:650}.counter{font-size:12px;font-weight:400;color:#657487}.steps{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px;margin-top:10px}.step{background:#e9eef3;border-radius:7px;text-align:center;padding:12px 0;font-weight:700}.step.visited{background:#d4eee0}.step.next{background:#fde7b4}.controls{margin-top:16px}.right{display:flex;gap:8px}.primary{background:#253e59;color:#fff;border-color:#253e59}.hint{margin-top:12px;line-height:1.5}@media(max-width:440px){body{padding:8px}main{padding:14px}header{align-items:flex-start}h1{font-size:18px}button{padding:9px 12px}.graph{margin:0 auto}}
+</style>
+</head>
+<body>
+<main>
+<header><div><h1>DFS & BFS Traversal</h1><p>Explore a graph, one node at a time.</p></div><div class="seg" role="group" aria-label="Traversal algorithm"><button id="dfs" type="button" aria-pressed="true">DFS</button><button id="bfs" type="button" aria-pressed="false">BFS</button></div></header>
+<svg class="graph" viewBox="0 0 320 220" role="img" aria-label="Graph with edges A-B, A-C, B-D, B-E, and C-F. Nodes change color as traversal progresses.">
+<g aria-hidden="true"><line class="edge" x1="160" y1="27" x2="85" y2="96"/><line class="edge" x1="160" y1="27" x2="235" y2="96"/><line class="edge" x1="85" y1="96" x2="43" y2="178"/><line class="edge" x1="85" y1="96" x2="127" y2="178"/><line class="edge" x1="235" y1="96" x2="277" y2="178"/></g>
+<g class="node" data-node="A"><circle cx="160" cy="27" r="22"/><text x="160" y="28">A</text></g><g class="node" data-node="B"><circle cx="85" cy="96" r="22"/><text x="85" y="97">B</text></g><g class="node" data-node="C"><circle cx="235" cy="96" r="22"/><text x="235" y="97">C</text></g><g class="node" data-node="D"><circle cx="43" cy="178" r="22"/><text x="43" y="179">D</text></g><g class="node" data-node="E"><circle cx="127" cy="178" r="22"/><text x="127" y="179">E</text></g><g class="node" data-node="F"><circle cx="277" cy="178" r="22"/><text x="277" y="179">F</text></g>
+</svg>
+<div class="legend"><span><span class="swatch visited-swatch"></span>Visited</span><span><span class="swatch next-swatch"></span>Next</span></div>
+<section class="panel" aria-label="Traversal order"><div class="steps-head"><span>Traversal order</span><span class="counter" id="counter" aria-live="polite">0 / 6 visited</span></div><div class="steps" id="steps"></div></section>
+<div class="controls"><button id="reset" type="button">↺ Reset</button><div class="right"><button id="back" type="button">← Back</button><button class="primary" id="next" type="button">Next →</button></div></div>
+<p class="hint" id="description" aria-live="polite">DFS explores a branch fully before backtracking. Select Next to start.</p>
+</main>
+<script>
+'use strict';
+const graph={A:['B','C'],B:['A','D','E'],C:['A','F'],D:['B'],E:['B'],F:['C']};
+function dfs(start){const seen=new Set(),order=[];function visit(node){seen.add(node);order.push(node);for(const neighbor of graph[node])if(!seen.has(neighbor))visit(neighbor)}visit(start);return order}
+function bfs(start){const seen=new Set([start]),queue=[start],order=[];for(let i=0;i<queue.length;i++){const node=queue[i];order.push(node);for(const neighbor of graph[node])if(!seen.has(neighbor)){seen.add(neighbor);queue.push(neighbor)}}return order}
+const sequences={DFS:dfs('A'),BFS:bfs('A')};let algorithm='DFS',step=0;
+const $=id=>document.getElementById(id);const nodes=[...document.querySelectorAll('[data-node]')];
+function render(){const path=sequences[algorithm];$('dfs').setAttribute('aria-pressed',String(algorithm==='DFS'));$('bfs').setAttribute('aria-pressed',String(algorithm==='BFS'));for(const el of nodes){const index=path.indexOf(el.dataset.node);el.classList.toggle('visited',index<step);el.classList.toggle('next',index===step)}$('steps').replaceChildren(...path.map((name,i)=>{const el=document.createElement('div');el.className='step'+(i<step?' visited':i===step?' next':'');el.textContent=name;return el}));$('counter').textContent=`${step} / ${path.length} visited`;$('back').disabled=step===0;$('next').disabled=step===path.length;$('description').textContent=(algorithm==='DFS'?'DFS explores a branch fully before backtracking.':'BFS explores nodes level by level.')+(step===path.length?' Traversal complete.':` ${step?`Last visited: ${path[step-1]}. `:''}Next node: ${path[step]}.`)}
+$('dfs').addEventListener('click',()=>{algorithm='DFS';step=0;render()});$('bfs').addEventListener('click',()=>{algorithm='BFS';step=0;render()});$('back').addEventListener('click',()=>{step=Math.max(0,step-1);render()});$('next').addEventListener('click',()=>{step=Math.min(sequences[algorithm].length,step+1);render()});$('reset').addEventListener('click',()=>{step=0;render()});render();
+</script>
+</body>
+</html>
